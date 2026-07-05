@@ -2853,6 +2853,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nomicfoundation/hardhat-foundry@npm:^3.0.4":
+  version: 3.0.4
+  resolution: "@nomicfoundation/hardhat-foundry@npm:3.0.4"
+  dependencies:
+    "@nomicfoundation/hardhat-errors": "npm:^3.0.15"
+    "@nomicfoundation/hardhat-utils": "npm:^4.1.2"
+  peerDependencies:
+    hardhat: ^3.8.0
+  checksum: 10/9d5461fd82c32350f26103cc087bb9415955b96598f2abdea50c0104b50226f716c161aa587a893de5f2b52ad1ddb971b5616d0405c13ec80be41a85eb1bc633
+  languageName: node
+  linkType: hard
+
 "@nomicfoundation/hardhat-ignition-ethers@npm:^3":
   version: 3.1.6
   resolution: "@nomicfoundation/hardhat-ignition-ethers@npm:3.1.6"
@@ -4315,6 +4327,7 @@ __metadata:
     "@inquirer/password": "npm:^4.0.2"
     "@nomicfoundation/hardhat-ethers": "npm:^4"
     "@nomicfoundation/hardhat-ethers-chai-matchers": "npm:^3"
+    "@nomicfoundation/hardhat-foundry": "npm:^3.0.4"
     "@nomicfoundation/hardhat-ignition": "npm:^3"
     "@nomicfoundation/hardhat-ignition-ethers": "npm:^3"
     "@nomicfoundation/hardhat-keystore": "npm:^3"

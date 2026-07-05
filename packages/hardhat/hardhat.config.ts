@@ -3,6 +3,7 @@ import { defineConfig, overrideTask } from "hardhat/config";
 import hardhatToolbox from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
 import HardhatDeploy from "hardhat-deploy";
 import generateTsAbis from "./scripts/generateTsAbis.js";
+import hardhatFoundry from "@nomicfoundation/hardhat-foundry";
 
 // If not set, it uses the hardhat account 0 private key.
 // You can generate a random account with `yarn generate` or `yarn account:import` to import your existing PK
@@ -27,7 +28,7 @@ const deployTasks = [
 ];
 
 export default defineConfig({
-  plugins: [hardhatToolbox, HardhatDeploy],
+  plugins: [hardhatToolbox, HardhatDeploy, hardhatFoundry],
   solidity: {
     compilers: [
       {

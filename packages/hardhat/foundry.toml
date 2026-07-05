@@ -1,0 +1,15 @@
+[profile.default]
+src = "contracts"
+out = "out"
+test = "test/foundry"
+libs = ["node_modules", "lib"]
+cache_path = "cache_forge"
+solc_version = "0.8.30"
+remappings = [
+    "@nomicfoundation/=node_modules/@nomicfoundation/",
+    "@openzeppelin/=node_modules/@openzeppelin/",
+    "hardhat-deploy/=node_modules/hardhat-deploy/",
+    "hardhat/=node_modules/hardhat/",
+]
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
