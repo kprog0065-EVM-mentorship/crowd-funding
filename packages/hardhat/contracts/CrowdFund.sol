@@ -99,12 +99,10 @@ contract CrowdFund is ReentrancyGuard, Ownable {
     error InvalidDuration();
     error CampaignNotFound();
     error CampaignNotActive();
-    error CampaignExpired();
     error ZeroContribution();
     error DirectTransferNotAllowed();
     error NotCampaignOwner();
-    error DeadlineNotReached();
-    error FundsAlreadyWithdrawn();
+    error CampaignFundsAlreadyWithdrawn();
     error WithdrawalFailed();
     error GoalWasReached();
     error NoContributionToRefund();
@@ -114,10 +112,6 @@ contract CrowdFund is ReentrancyGuard, Ownable {
     error CampaignAlreadySuccessful();
     error CampaignNotSuccessful();
     error CampaignWasSuccessful();
-
-    // -------------------------
-    // Modifiers
-    // -------------------------
 
     // -------------------------
     // Constructor
@@ -176,6 +170,7 @@ contract CrowdFund is ReentrancyGuard, Ownable {
     function contribute(uint256 _campaignId) external payable {
         Campaign storage campaign = campaigns[_campaignId];
 
+        _updateCampaignStatus(campaign);
         _validateContribution(_campaignId, campaign);
 
         uint256 remaining = campaign.goal - campaign.amountRaised;
@@ -213,6 +208,7 @@ contract CrowdFund is ReentrancyGuard, Ownable {
     function withdraw(uint256 _campaignId) external nonReentrant {
         Campaign storage campaign = campaigns[_campaignId];
 
+        _updateCampaignStatus(campaign);
         _validateWithdrawal(_campaignId, campaign);
 
         uint256 amount = campaign.amountRaised;
@@ -247,14 +243,28 @@ contract CrowdFund is ReentrancyGuard, Ownable {
     // Internal Functions
     // -------------------------
 
+    /// @notice internal helper to update campaign status
+    /// @param campaign campaign
+    function _updateCampaignStatus(Campaign storage campaign) internal {
+        if (campaign.status != CampaignStatus.Active) return;
+
+        // solhint-disable-next-line gas-strict-inequalities
+        if (block.timestamp >= campaign.deadline) {
+            // solhint-disable-next-line gas-strict-inequalities
+            if (campaign.amountRaised >= campaign.goal) {
+                campaign.status = CampaignStatus.Successful;
+            } else {
+                campaign.status = CampaignStatus.Failed;
+            }
+        }
+    }
+
     /// @notice internal helper to validate contribution
     /// @param _campaignId campaign id
     /// @param campaign campaign
     function _validateContribution(uint256 _campaignId, Campaign storage campaign) internal view {
         if (_campaignId == 0 || _campaignId > campaignCount) revert CampaignNotFound();
         if (msg.value == 0) revert ZeroContribution();
-        // solhint-disable-next-line gas-strict-inequalities
-        if (block.timestamp >= campaign.deadline) revert CampaignExpired();
         if (campaign.status != CampaignStatus.Active) revert CampaignNotActive();
     }
 
@@ -265,7 +275,7 @@ contract CrowdFund is ReentrancyGuard, Ownable {
         if (_campaignId == 0 || _campaignId > campaignCount) revert CampaignNotFound();
         if (msg.sender != campaign.owner) revert NotCampaignOwner();
         if (campaign.status != CampaignStatus.Successful) revert CampaignNotSuccessful();
-        if (campaign.withdrawn) revert FundsAlreadyWithdrawn();
+        if (campaign.withdrawn) revert CampaignFundsAlreadyWithdrawn();
     }
 
     /// @notice internal helper to validate refund
@@ -273,7 +283,6 @@ contract CrowdFund is ReentrancyGuard, Ownable {
     /// @param campaign campaign
     function _validateRefund(uint256 _campaignId, Campaign storage campaign) internal view {
         if (_campaignId == 0 || _campaignId > campaignCount) revert CampaignNotFound();
-        if (block.timestamp < campaign.deadline) revert DeadlineNotReached();
         if (campaign.status == CampaignStatus.Successful) revert CampaignWasSuccessful();
         if (contributions[_campaignId][msg.sender] == 0) revert NoContributionToRefund();
     }
