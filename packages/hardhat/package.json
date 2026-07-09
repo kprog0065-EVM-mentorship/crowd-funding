@@ -20,7 +20,8 @@
     "lint": "eslint",
     "lint-staged": "eslint",
     "test": "hardhat test --network hardhat --gas-stats",
-    "verify": "tsx scripts/runVerify.ts"
+    "verify": "tsx scripts/runVerify.ts",
+    "solhint": "solhint \"contracts/**/*.sol\""
   },
   "dependencies": {
     "@inquirer/password": "^4.0.2",
@@ -64,6 +65,7 @@
     "prettier": "^3.5.3",
     "prettier-plugin-solidity": "^1.4.1",
     "rocketh": "^0.19.7",
+    "solhint": "^6.2.3",
     "tsx": "^4.21.0",
     "typescript": "^5.8.2"
   }

@@ -34,6 +34,7 @@
     "hardhat:lint-staged": "yarn workspace @se-2/hardhat lint-staged",
     "hardhat:test": "yarn workspace @se-2/hardhat test",
     "hardhat:verify": "yarn workspace @se-2/hardhat verify",
+    "hardhat:solhint": "yarn workspace @se-2/hardhat solhint",
     "postinstall": "husky install",
     "ipfs": "yarn workspace @se-2/nextjs ipfs",
     "lint": "yarn next:lint && yarn hardhat:lint",
@@ -48,7 +49,8 @@
     "vercel": "yarn workspace @se-2/nextjs vercel",
     "vercel:login": "yarn workspace @se-2/nextjs vercel:login",
     "vercel:yolo": "yarn workspace @se-2/nextjs vercel:yolo",
-    "verify": "yarn hardhat:verify"
+    "verify": "yarn hardhat:verify",
+    "solhint": "yarn hardhat:solhint"
   },
   "devDependencies": {
     "husky": "~9.1.6",
