@@ -1,0 +1,51 @@
+{
+  "extends": "solhint:recommended",
+  "excludedFiles": [
+    "node_modules/**",
+    "artifacts/**",
+    "coverage/**"
+  ],
+  "rules": {
+    "compiler-version": ["error", "^0.8.28"],
+
+    "import-path-check": "off",
+    "reentrancy": "error",
+    "avoid-tx-origin": "error",
+    "no-inline-assembly": "error",
+    "avoid-call-value": "error",
+    "check-send-result": "error",
+    "func-visibility": ["error", { "ignoreConstructors": true }],
+    "state-visibility": "error",
+
+    "no-global-import": "error",
+    "explicit-types": "error",
+    "no-unused-vars": "error",
+    "no-unused-import": "error",
+    "no-console": "error",
+    "one-contract-per-file": "error",
+
+    "use-natspec": "warn",
+    "reason-string": ["warn", { "maxLength": 64 }],
+
+    "gas-custom-errors": "warn",
+    "gas-increment-by-one": "warn",
+    "gas-indexed-events": "warn",
+    "gas-calldata-parameters": "warn",
+    "gas-struct-packing": "warn",
+    "gas-strict-inequalities": "warn",
+
+    "contract-name-capwords": "error",
+    "func-name-mixedcase": "error",
+    "var-name-mixedcase": "error",
+    "const-name-snakecase": "error",
+    "event-name-capwords": "error",
+    "immutable-vars-naming": "error",
+    "private-vars-leading-underscore": "warn",
+    "interface-starts-with-i": "warn",
+
+    "max-line-length": ["warn", 120],
+    "imports-on-top": "error",
+    "visibility-modifier-order": "warn",
+    "ordering": "warn"
+  }
+}
