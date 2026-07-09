@@ -114,6 +114,18 @@ contract CrowdFund is ReentrancyGuard, Ownable {
     error CampaignWasSuccessful();
 
     // -------------------------
+    // Modifiers
+    // -------------------------
+
+    /// @notice Modifier to ensure caller is the campaign owner
+    modifier onlyCampaignOwner(uint256 campaignId) {
+        if (msg.sender != campaigns[campaignId].owner) {
+            revert NotCampaignOwner();
+        }
+        _;
+    }
+
+    // -------------------------
     // Constructor
     // -------------------------
 
@@ -205,7 +217,7 @@ contract CrowdFund is ReentrancyGuard, Ownable {
 
     /// @notice Owner withdraws funds once after deadline if goal is met, using CEI and reentrancy protection.
     /// @param _campaignId campaign id
-    function withdraw(uint256 _campaignId) external nonReentrant {
+    function withdraw(uint256 _campaignId) external nonReentrant onlyCampaignOwner(_campaignId) {
         Campaign storage campaign = campaigns[_campaignId];
 
         _updateCampaignStatus(campaign);
@@ -237,6 +249,52 @@ contract CrowdFund is ReentrancyGuard, Ownable {
         if (!success) revert RefundFailed();
 
         emit RefundClaimed(_campaignId, msg.sender, amount);
+    }
+
+    /// @notice function to get campaign details
+    /// @param _campaignId campaign id
+    /// @return campaign
+    function getCampaign(uint256 _campaignId) external view returns (Campaign memory) {
+        return campaigns[_campaignId];
+    }
+
+    /// @notice function to get campaign owner
+    /// @param _campaignId campaign id
+    /// @return campaign owner
+    function getCampaignOwner(uint256 _campaignId) external view returns (address) {
+        return campaigns[_campaignId].owner;
+    }
+
+    /// @notice function to get campaign title
+    /// @param _campaignId campaign id
+    /// @return campaign title
+    function getAmountRaised(uint256 _campaignId) external view returns (uint256) {
+        return campaigns[_campaignId].amountRaised;
+    }
+
+    /// @notice function to get campaign title
+    /// @param _campaignId campaign id
+    /// @return campaign title
+    function getTimeRemaining(uint256 _campaignId) external view returns (uint256) {
+        Campaign storage campaign = campaigns[_campaignId];
+        // solhint-disable-next-line gas-strict-inequalities
+        if (block.timestamp >= campaign.deadline) return 0;
+        return campaign.deadline - block.timestamp;
+    }
+
+    /// @notice function to get campaign title
+    /// @param _campaignId campaign id
+    /// @return campaign title
+    function getContributorCount(uint256 _campaignId) external view returns (uint256) {
+        return contributorCount[_campaignId];
+    }
+
+    /// @notice function to get campaign title
+    /// @param _campaignId campaign id
+    /// @param _contributor contributor
+    /// @return campaign title
+    function getContribution(uint256 _campaignId, address _contributor) external view returns (uint256) {
+        return contributions[_campaignId][_contributor];
     }
 
     // -------------------------
@@ -273,7 +331,6 @@ contract CrowdFund is ReentrancyGuard, Ownable {
     /// @param campaign campaign
     function _validateWithdrawal(uint256 _campaignId, Campaign storage campaign) internal view {
         if (_campaignId == 0 || _campaignId > campaignCount) revert CampaignNotFound();
-        if (msg.sender != campaign.owner) revert NotCampaignOwner();
         if (campaign.status != CampaignStatus.Successful) revert CampaignNotSuccessful();
         if (campaign.withdrawn) revert CampaignFundsAlreadyWithdrawn();
     }
