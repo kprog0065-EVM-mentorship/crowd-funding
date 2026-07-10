@@ -239,6 +239,7 @@ contract CrowdFund is ReentrancyGuard, Ownable {
     function claimRefund(uint256 _campaignId) external nonReentrant {
         Campaign storage campaign = campaigns[_campaignId];
 
+        _updateCampaignStatus(campaign);
         _validateRefund(_campaignId, campaign);
 
         uint256 amount = contributions[_campaignId][msg.sender];

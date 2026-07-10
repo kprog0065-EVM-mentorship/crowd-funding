@@ -1,31 +1,35 @@
 # dependencies
-node_modules
+node_modules/
 
 # env files
 .env
 
 # coverage
-coverage
+coverage/
 coverage.json
 
 # generated contract types
-types
-generated
+types/
+generated/
 
 # hardhat files
-cache
-artifacts
+cache/
+artifacts/
+out/
+
+# foundry files
+cache_forge
 
 # zkSync files
-artifacts-zk
-cache-zk
+artifacts-zk/
+cache-zk/
 
 # local deployments
-deployments/default
-deployments/localhost
+deployments/default/
+deployments/localhost/
 
 # typescript
 *.tsbuildinfo
 
 # other
-temp
+temp/
