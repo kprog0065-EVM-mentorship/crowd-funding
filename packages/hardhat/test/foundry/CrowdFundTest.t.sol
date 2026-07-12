@@ -41,6 +41,7 @@ contract CrowdFundTest is Test {
         crowdFund.createCampaign("Campaign Title", "Campaign Description", 10 ether, 7 days);
 
         assertEq(crowdFund.campaignCount(), 1);
+
         CrowdFund.Campaign memory campaign = crowdFund.getCampaign(1);
         assertEq(campaign.id, 1);
         assertEq(campaign.goal, 10 ether);
@@ -48,6 +49,7 @@ contract CrowdFundTest is Test {
         assertEq(campaign.deadline, block.timestamp + 7 days);
         assertEq(campaign.owner, owner);
         assertEq(uint256(campaign.status), uint256(CrowdFund.CampaignStatus.Active));
+        assertEq(uint256(crowdFund.getCampaignStatus(1)), uint256(CrowdFund.CampaignStatus.Active));
         assertFalse(campaign.withdrawn);
         assertEq(campaign.title, "Campaign Title");
         assertEq(campaign.description, "Campaign Description");
@@ -89,6 +91,7 @@ contract CrowdFundTest is Test {
         assertEq(crowdFund.getContributorCount(id), 1);
         assertEq(crowdFund.getContribution(id, alice), 3 ether);
         assertEq(uint256(crowdFund.getCampaign(id).status), uint256(CrowdFund.CampaignStatus.Active));
+        assertEq(uint256(crowdFund.getCampaignStatus(id)), uint256(CrowdFund.CampaignStatus.Active));
     }
 
     function testContributeFirstContributorCountOnlyOnce() public {
@@ -105,7 +108,7 @@ contract CrowdFundTest is Test {
         assertEq(crowdFund.getAmountRaised(id), 2 ether);
     }
 
-    function testContributeExactGoalMarksSuccessful() public {
+    function testContributeExactGoalKeepsStoredStatusActiveBeforeDeadline() public {
         uint256 id = _createBasicCampaign();
 
         vm.prank(alice);
@@ -113,10 +116,11 @@ contract CrowdFundTest is Test {
 
         CrowdFund.Campaign memory campaign = crowdFund.getCampaign(id);
         assertEq(crowdFund.getAmountRaised(id), 10 ether);
-        assertEq(uint256(campaign.status), uint256(CrowdFund.CampaignStatus.Successful));
+        assertEq(uint256(campaign.status), uint256(CrowdFund.CampaignStatus.Active));
+        assertEq(uint256(crowdFund.getCampaignStatus(id)), uint256(CrowdFund.CampaignStatus.Active));
     }
 
-    function testContributeOverGoalRefundsExcess() public {
+    function testContributeOverGoalRefundsExcessAndStatusStaysActiveBeforeDeadline() public {
         uint256 id = _createBasicCampaign();
 
         uint256 aliceBefore = alice.balance;
@@ -127,7 +131,8 @@ contract CrowdFundTest is Test {
         assertEq(crowdFund.getAmountRaised(id), 10 ether);
         assertEq(crowdFund.getContribution(id, alice), 10 ether);
         assertEq(crowdFund.getContributorCount(id), 1);
-        assertEq(uint256(crowdFund.getCampaign(id).status), uint256(CrowdFund.CampaignStatus.Successful));
+        assertEq(uint256(crowdFund.getCampaign(id).status), uint256(CrowdFund.CampaignStatus.Active));
+        assertEq(uint256(crowdFund.getCampaignStatus(id)), uint256(CrowdFund.CampaignStatus.Active));
         assertEq(alice.balance, aliceBefore - 10 ether);
     }
 
@@ -278,7 +283,7 @@ contract CrowdFundTest is Test {
         assertEq(crowdFund.getTimeRemaining(id), 0);
     }
 
-    function testUpdateCampaignStatusEarlyReturnWhenSuccessful() public {
+    function testWithdrawPersistsSuccessfulStatusAfterDeadlineWhenGoalMet() public {
         uint256 id = _createBasicCampaign();
 
         vm.prank(alice);
@@ -286,15 +291,14 @@ contract CrowdFundTest is Test {
 
         vm.warp(block.timestamp + 8 days);
 
-        vm.prank(alice);
-        vm.expectRevert(CrowdFund.CampaignNotActive.selector);
-        crowdFund.contribute{ value: 1 ether }(id);
+        vm.prank(owner);
+        crowdFund.withdraw(id);
 
         CrowdFund.Campaign memory campaign = crowdFund.getCampaign(id);
         assertEq(uint256(campaign.status), uint256(CrowdFund.CampaignStatus.Successful));
     }
 
-    function testUpdateCampaignStatusFailsAfterDeadline() public {
+    function testUpdateCampaignStatusSetsFailedAfterDeadlineWhenGoalNotMet() public {
         uint256 id = _createBasicCampaign();
 
         vm.prank(alice);
@@ -331,6 +335,46 @@ contract CrowdFundTest is Test {
         vm.prank(owner);
         vm.expectRevert(CrowdFund.NotCampaignOwner.selector);
         crowdFund.withdraw(1);
+    }
+
+    function testGetCampaignStatusReturnsSuccessfulAfterDeadlineWhenGoalMet() public {
+        uint256 id = _createBasicCampaign();
+
+        vm.prank(alice);
+        crowdFund.contribute{ value: 10 ether }(id);
+
+        vm.warp(block.timestamp + 8 days);
+
+        assertEq(uint256(crowdFund.getCampaign(id).status), uint256(CrowdFund.CampaignStatus.Active));
+        assertEq(uint256(crowdFund.getCampaignStatus(id)), uint256(CrowdFund.CampaignStatus.Successful));
+    }
+
+    function testGetCampaignStatusReturnsFailedAfterDeadlineWhenGoalNotMet() public {
+        uint256 id = _createBasicCampaign();
+
+        vm.prank(alice);
+        crowdFund.contribute{ value: 3 ether }(id);
+
+        vm.warp(block.timestamp + 8 days);
+
+        assertEq(uint256(crowdFund.getCampaign(id).status), uint256(CrowdFund.CampaignStatus.Active));
+        assertEq(uint256(crowdFund.getCampaignStatus(id)), uint256(CrowdFund.CampaignStatus.Failed));
+    }
+
+    function testGetCampaignStatusRevertsOnInvalidCampaignId() public {
+        vm.expectRevert(CrowdFund.CampaignNotFound.selector);
+        crowdFund.getCampaignStatus(1);
+    }
+
+    function testWithdrawRevertsBeforeDeadlineEvenIfGoalMet() public {
+        uint256 id = _createBasicCampaign();
+
+        vm.prank(alice);
+        crowdFund.contribute{ value: 10 ether }(id);
+
+        vm.prank(owner);
+        vm.expectRevert(CrowdFund.CampaignNotSuccessful.selector);
+        crowdFund.withdraw(id);
     }
 
     function testReceiveReverts() public {
