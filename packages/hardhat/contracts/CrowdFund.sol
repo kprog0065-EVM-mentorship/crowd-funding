@@ -203,10 +203,6 @@ contract CrowdFund is ReentrancyGuard, Ownable {
         campaign.amountRaised += accepted;
         contributions[_campaignId][msg.sender] += accepted;
 
-        if (campaign.amountRaised == campaign.goal) {
-            campaign.status = CampaignStatus.Successful;
-        }
-
         if (refund > 0) {
             (bool success, ) = payable(msg.sender).call{ value: refund }("");
             if (!success) revert ExcessRefundFailed();
@@ -226,7 +222,6 @@ contract CrowdFund is ReentrancyGuard, Ownable {
         uint256 amount = campaign.amountRaised;
 
         campaign.withdrawn = true;
-        campaign.status = CampaignStatus.Successful;
 
         (bool success, ) = payable(campaign.owner).call{ value: amount }("");
         if (!success) revert WithdrawalFailed();
@@ -298,24 +293,44 @@ contract CrowdFund is ReentrancyGuard, Ownable {
         return contributions[_campaignId][_contributor];
     }
 
+    /// @notice function to get campaign status
+    /// @param _campaignId campaign id
+    /// @return campaign status
+    function getCampaignStatus(uint256 _campaignId) external view returns (CampaignStatus) {
+        if (_campaignId == 0 || _campaignId > campaignCount) revert CampaignNotFound();
+
+        Campaign storage campaign = campaigns[_campaignId];
+        return _currentCampaignStatus(campaign);
+    }
+
     // -------------------------
     // Internal Functions
     // -------------------------
 
     /// @notice internal helper to update campaign status
-    /// @param campaign campaign
+    /// @param campaign campaign to update
     function _updateCampaignStatus(Campaign storage campaign) internal {
-        if (campaign.status != CampaignStatus.Active) return;
+        campaign.status = _currentCampaignStatus(campaign);
+    }
+
+    /// @notice internal helper to get campaign status
+    /// @param campaign campaign
+    /// @return campaign status
+    function _currentCampaignStatus(Campaign storage campaign) internal view returns (CampaignStatus) {
+        if (campaign.status != CampaignStatus.Active) {
+            return campaign.status;
+        }
 
         // solhint-disable-next-line gas-strict-inequalities
         if (block.timestamp >= campaign.deadline) {
-            // solhint-disable-next-line gas-strict-inequalities
-            if (campaign.amountRaised >= campaign.goal) {
-                campaign.status = CampaignStatus.Successful;
+            if (campaign.amountRaised == campaign.goal) {
+                return CampaignStatus.Successful;
             } else {
-                campaign.status = CampaignStatus.Failed;
+                return CampaignStatus.Failed;
             }
         }
+
+        return CampaignStatus.Active;
     }
 
     /// @notice internal helper to validate contribution
