@@ -8,6 +8,9 @@ node_modules/
 coverage/
 coverage.json
 
+# echidna files
+crytic-export/
+
 # generated contract types
 types/
 generated/
