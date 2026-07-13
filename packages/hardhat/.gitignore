@@ -22,6 +22,7 @@ out/
 
 # foundry files
 cache_forge
+broadcast/
 
 # zkSync files
 artifacts-zk/

@@ -2,6 +2,7 @@
 src = "contracts"
 out = "out"
 test = "test/foundry"
+script = "scripts/foundry"
 libs = ["node_modules", "lib"]
 cache_path = "cache_forge"
 solc_version = "0.8.28"
