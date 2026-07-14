@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { ConnectButton as RainbowKitConnectButton } from "@rainbow-me/rainbowkit";
 import { formatEther } from "viem";
 import { useCampaigns } from "~~/hooks/useCampaigns";
 
@@ -10,23 +9,6 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <section className="border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/" className="text-xl font-bold tracking-tight">
-            CrowdFund
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/create"
-              className="rounded-full bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
-            >
-              Start a Campaign
-            </Link>
-            <RainbowKitConnectButton />
-          </div>
-        </div>
-      </section>
-
       <section className="mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
         <div>
           <p className="mb-4 inline-flex rounded-full border border-indigo-400/30 bg-indigo-400/10 px-3 py-1 text-sm text-indigo-300">
